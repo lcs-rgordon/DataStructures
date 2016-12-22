@@ -1,4 +1,5 @@
 //: Playground - noun: a place where people can play
+
 import Cocoa
 import Foundation
 
@@ -19,80 +20,103 @@ func playWar(playerHand : inout [Card], computerHand : inout [Card], playerWarHa
     
     // It's a war!
     
-    // Remove the card the was already compared (and caused a war)
-    // Add to the "war deck" for each player
-    playerWarHand.append(playerHand[topOfDeck])
-    computerWarHand.append(computerHand[topOfDeck])
-    playerHand.remove(at: topOfDeck)
-    computerHand.remove(at: topOfDeck)
-    
-    // Building player's war hand
-    while playerWarHand.count < 4 && playerHand.count > 1 {
-        playerWarHand.append(playerHand[topOfDeck])
-        playerHand.remove(at: topOfDeck)
-    }
-    
-    // Building computer's war hand
-    while computerWarHand.count < 4 && computerHand.count > 1 {
-        computerWarHand.append(computerHand[topOfDeck])
-        computerHand.remove(at: topOfDeck)
-    }
-    
-    // Show player's war hand
-    status(of: playerWarHand, for: "player", type: "war")
-    
-    // Show computer's war hand
-    status(of: computerWarHand, for: "computer", type: "war")
-    
-    // Show player's regular hand
-    status(of: playerHand, for: "player", type: "regular")
-    
-    // Show computer's regular hand
-    status(of: computerHand, for: "computer", type: "regular")
-    
-    // Who won this war?
-    if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
+    // First, check to see that another war is even playable
+    // The card currently in the deck was the cause of the tie, so if that's all the player has left: game over!
+    if playerHand.count == 1 {
         
-        // Player won
-        
-        // Give cards from both war hands to player
-        playerHand.append(contentsOf: playerWarHand)
-        playerHand.append(contentsOf: computerWarHand)
-        
-        // Emtpy the war hands
-        playerWarHand = []
-        computerWarHand = []
-        
-        // Give player the cards from regular deck that were compared
-        playerHand.append(computerHand[topOfDeck])
-        playerHand.append(playerHand[topOfDeck])
-        computerHand.remove(at: topOfDeck)
-        playerHand.remove(at: topOfDeck)
-        
-    } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
-        
-        // Computer won
-        
-        // Give cards from both war hands to computer
-        computerHand.append(contentsOf: playerWarHand)
-        computerHand.append(contentsOf: computerWarHand)
-        
-        // Empty the war hands
-        playerWarHand = []
-        computerWarHand = []
-        
-        // Give computer the cards from regular deck that were compared
-        computerHand.append(computerHand[topOfDeck])
+        // Player loses
         computerHand.append(playerHand[topOfDeck])
-        computerHand.remove(at: topOfDeck)
         playerHand.remove(at: topOfDeck)
+        print("Computer wins (player out of cards in a war)")
+        return
         
+    } else if computerHand.count == 1 {
+        
+        // Computer loses
+        playerHand.append(computerHand[topOfDeck])
+        computerHand.remove(at: topOfDeck)
+        print("Player wins (computer out of cards in a war)")
+        return
         
     } else {
         
-        //It is another war
-        print("It is time for _another_ war!")
-        playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
+        // Play the war
+        // Remove the card the was already compared (and caused a war)
+        // Add to the "war deck" for each player
+        playerWarHand.append(playerHand[topOfDeck])
+        computerWarHand.append(computerHand[topOfDeck])
+        playerHand.remove(at: topOfDeck)
+        computerHand.remove(at: topOfDeck)
+        
+        // Building player's war hand
+        while playerWarHand.count < 4 && playerHand.count > 1 {
+            playerWarHand.append(playerHand[topOfDeck])
+            playerHand.remove(at: topOfDeck)
+        }
+        
+        // Building computer's war hand
+        while computerWarHand.count < 4 && computerHand.count > 1 {
+            computerWarHand.append(computerHand[topOfDeck])
+            computerHand.remove(at: topOfDeck)
+        }
+        
+        // Show player's war hand
+        status(of: playerWarHand, for: "player", type: "war")
+        
+        // Show computer's war hand
+        status(of: computerWarHand, for: "computer", type: "war")
+        
+        // Show player's regular hand
+        status(of: playerHand, for: "player", type: "regular")
+        
+        // Show computer's regular hand
+        status(of: computerHand, for: "computer", type: "regular")
+        
+        // Who won this war?
+        if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
+            
+            // Player won
+            
+            // Give cards from both war hands to player
+            playerHand.append(contentsOf: playerWarHand)
+            playerHand.append(contentsOf: computerWarHand)
+            
+            // Emtpy the war hands
+            playerWarHand = []
+            computerWarHand = []
+            
+            // Give player the cards from regular deck that were compared
+            playerHand.append(computerHand[topOfDeck])
+            playerHand.append(playerHand[topOfDeck])
+            computerHand.remove(at: topOfDeck)
+            playerHand.remove(at: topOfDeck)
+            
+        } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
+            
+            // Computer won
+            
+            // Give cards from both war hands to computer
+            computerHand.append(contentsOf: playerWarHand)
+            computerHand.append(contentsOf: computerWarHand)
+            
+            // Empty the war hands
+            playerWarHand = []
+            computerWarHand = []
+            
+            // Give computer the cards from regular deck that were compared
+            computerHand.append(computerHand[topOfDeck])
+            computerHand.append(playerHand[topOfDeck])
+            computerHand.remove(at: topOfDeck)
+            playerHand.remove(at: topOfDeck)
+            
+            
+        } else {
+            
+            //It is another war
+            print("It is time for _another_ war!")
+            playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
+            
+        }
         
     }
     
@@ -303,31 +327,14 @@ while playerHand.count > 0 && playerHand.count < 52 {
         
         // Tie
         
-        // Do both players have at least more then 0 cards so that they can play a war?
-        if playerHand.count == 0 {
-            
-            // Player loses
-            print("Computer wins (player out of cards in a war)")
-            break
-            
-        } else if computerHand.count == 0 {
-            
-            // Computer loses
-            print("Player wins (computer out of cards in a war)")
-            break
-            
-        } else {
-            
-            // It's a war!
-            
-            // Initialize the decks for war
-            var playerWarHand : [Card] = []
-            var computerWarHand : [Card] = []
-            
-            // Play the war!
-            playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
-            
-        }
+        // It's a war!
+        
+        // Initialize the decks for war
+        var playerWarHand : [Card] = []
+        var computerWarHand : [Card] = []
+        
+        // Play the war!
+        playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
         
     }
     
