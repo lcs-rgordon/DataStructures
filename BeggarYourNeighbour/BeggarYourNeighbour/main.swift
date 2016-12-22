@@ -6,5 +6,3 @@
 //  Copyright © 2016 Russell Gordon. All rights reserved.
 //
 
-//: Playground - noun: a place where people can play
-

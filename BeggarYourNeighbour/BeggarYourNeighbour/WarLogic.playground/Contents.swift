@@ -1,3 +1,4 @@
+//: Playground - noun: a place where people can play
 import Cocoa
 import Foundation
 
@@ -5,8 +6,8 @@ import Foundation
 func status(of hand : [Card], for player : String, type : String) {
     print("=====================================")
     print("All cards in the \(player)'s \(type) hand are...")
-    for (value, card) in hand.enumerated() {
-        print("Card \(value + 1) in \(player)'s \(type) hand is a suit of \(Suit.glyphFor(card.suit)) and value is \(card.value)")
+    for (index, card) in hand.enumerated() {
+        print("Card \(index + 1) in \(player)'s \(type) hand is a suit of \(card.suit.glyph) and value is \(card.value)")
     }
 }
 
@@ -50,7 +51,7 @@ func playWar(playerHand : inout [Card], computerHand : inout [Card], playerWarHa
     status(of: computerHand, for: "computer", type: "regular")
     
     // Who won this war?
-    if playerHand[topOfDeck].value > computerHand[topOfDeck].value {
+    if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
         
         // Player won
         
@@ -68,7 +69,7 @@ func playWar(playerHand : inout [Card], computerHand : inout [Card], playerWarHa
         computerHand.remove(at: topOfDeck)
         playerHand.remove(at: topOfDeck)
         
-    } else if computerHand[topOfDeck].value > playerHand[topOfDeck].value {
+    } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
         
         // Computer won
         
@@ -98,41 +99,83 @@ func playWar(playerHand : inout [Card], computerHand : inout [Card], playerWarHa
 }
 
 // Create an enumeration for the suits of a deck of cards
-enum Suit : String {
+enum Suit : Int {
     
-    case hearts     = "❤️"
-    case diamonds   = "♦️"
-    case spades     = "♠️"
-    case clubs      = "♣️"
+    // List possible cases
+    case clubs = 1, diamonds = 2, hearts = 3, spades = 4
     
-    // Given a value, returns the suit
-    static func glyphFor(_ hashValue : Int) -> String {
-        switch hashValue {
-        case 0 :
-            return Suit.hearts.rawValue
-        case 1 :
-            return Suit.diamonds.rawValue
-        case 2 :
-            return Suit.spades.rawValue
-        case 3 :
-            return Suit.clubs.rawValue
-        default:
-            return Suit.hearts.rawValue
+    // Computed property to return rank
+    // Really just a convenience property to make code more readable, it just returns the raw value of the enumeration case
+    var rank : Int {
+        switch self {
+        default: return self.rawValue
         }
     }
     
+    // Computed property to return glyph
+    var glyph : Character {
+        switch self {
+        case .spades: return "♠️"
+        case .hearts: return "❤️"
+        case .diamonds: return "♦️"
+        case .clubs: return "♣️"
+        }
+    }
+    
+    // Does one rank (this instance) beat another rank?
+    func beats(_ otherSuit: Suit) -> Bool {
+        return self.rank > otherSuit.rank
+    }
 }
 
 // Create a new datatype to represent a playing card
 struct Card {
     
+    // Properties
     var value : Int
-    var suit : Int
+    var suit : Suit
+    
+    // Computed property to return card name
+    var name : String {
+        switch value {
+        case 1: return "Ace"
+        case 2: return "two"
+        case 3: return "three"
+        case 4: return "four"
+        case 5: return "five"
+        case 6: return "six"
+        case 7: return "seven"
+        case 8: return "eight"
+        case 9: return "nine"
+        case 10: return "ten"
+        case 11: return "Jack"
+        case 12: return "Queen"
+        case 13: return "King"
+        default: return "undefined"
+        }
+    }
+    
+    // Does the value for this card beat another card?
+    func beats(_ otherCard: Card) -> Bool {
+        return self.value > otherCard.value
+    }
     
     // Initializer accepts arguments to set up this instance of the struct
-    init(value : Int, suit : Int) {
-        self.value = value
-        self.suit = suit
+    init?(value : Int, suit : Int) {
+        // Only initialize the card if a valid valid is provided
+        if value > 0 && value < 14 {
+            self.value = value
+            // Assign the correct Suit enumeration case
+            switch suit {
+            case 1: self.suit = Suit.spades
+            case 2: self.suit = Suit.diamonds
+            case 3: self.suit = Suit.hearts
+            case 4: self.suit = Suit.spades
+            default: return nil
+            }
+        } else {
+            return nil
+        }
     }
     
 }
@@ -163,16 +206,17 @@ var game = War()
 
 // Initalize a deck of cards
 var deck : [Card] = []      // creates an empty deck
-for suit in 0...3 {
+for suit in 1...4 {
     for value in 1...13 {
-        var myCard = Card(value: value, suit: suit)
-        deck.append(myCard)
+        if let myCard = Card(value: value, suit: suit) {
+            deck.append(myCard)
+        }
     }
 }
 
 // Iterate over the deck of cards
 for card in deck {
-    print("Suit is \(Suit.glyphFor(card.suit)) and value is \(card.value)")
+    print("Suit is \(card.suit.glyph)) and value is \(card.value)")
 }
 
 // Initialize hands
@@ -230,7 +274,7 @@ while playerHand.count > 0 && playerHand.count < 52 {
     status(of: computerHand, for: "computer", type: "regular")
     
     // Compare the two cards and print a message saying "Computer won" or "Player won" as appropriate
-    if playerHand[topOfDeck].value > computerHand[topOfDeck].value {
+    if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
         
         // Player wins
         // Put computer's card at bottom of player's deck
@@ -244,7 +288,7 @@ while playerHand.count > 0 && playerHand.count < 52 {
         // Track result
         game.playerWins += 1
         
-    } else if playerHand[topOfDeck].value < computerHand[topOfDeck].value {
+    } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
         
         // Computer wins
         // Put player's card at bottom of computer's deck
@@ -304,7 +348,3 @@ if playerHand.count == 0 {
 
 // Print game rseults
 game.report()
-
-
-
-
