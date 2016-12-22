@@ -1,6 +1,13 @@
 //: Playground - noun: a place where people can play
 
-import Cocoa
+//
+//  main.swift
+//  BeggarYourNeighbour
+//
+//  Created by Russell Gordon on 12/14/16.
+//  Copyright © 2016 Russell Gordon. All rights reserved.
+//
+
 import Foundation
 
 // Print cards in a hand
@@ -204,6 +211,42 @@ struct Card {
     
 }
 
+struct Deck {
+    
+    // Properties
+    var cards : [Card]
+    
+    // Initializer(s)
+    init(acesHigh : Bool = false, withJokers : Bool = false) {
+        
+        // Initalize a deck of cards
+        cards = []
+        for suit in 1...4 {
+            for value in 1...13 {
+                if let newCard = Card(value: value, suit: suit) {
+                    cards.append(newCard)
+                }
+            }
+        }
+        
+    }
+    
+    // Prints status of the deck
+    func status() {
+        // Iterate over the deck of cards
+        for card in self.cards {
+            print("Suit is \(card.suit.glyph)) and value is \(card.value)")
+        }
+    }
+    
+}
+
+// Make a deck of cards
+var deck = Deck()
+
+// What does the deck look like?
+deck.status()
+
 // Create a new datatype to represent a game of war
 struct War {
     var hands : Int
@@ -228,37 +271,22 @@ struct War {
 // Track the result of this game
 var game = War()
 
-// Initalize a deck of cards
-var deck : [Card] = []      // creates an empty deck
-for suit in 1...4 {
-    for value in 1...13 {
-        if let myCard = Card(value: value, suit: suit) {
-            deck.append(myCard)
-        }
-    }
-}
-
-// Iterate over the deck of cards
-for card in deck {
-    print("Suit is \(card.suit.glyph)) and value is \(card.value)")
-}
-
 // Initialize hands
 //create empty array for player hand and computer hand
 var playerHand : [Card] = []
 var computerHand : [Card] = []
 
 // "Shuffle" the deck and give half the cards to the player
-while deck.count > 26 {
+while deck.cards.count > 26 {
     
     // Generate a random number between 0 and the count of cards still left in the deck
-    var position = Int(arc4random_uniform(UInt32(deck.count)))
+    var position = Int(arc4random_uniform(UInt32(deck.cards.count)))
     
     // Copy the card in this position to the player's hand
-    playerHand.append(deck[position])
+    playerHand.append(deck.cards[position])
     
     // Remove the card from the deck for this position
-    deck.remove(at: position)
+    deck.cards.remove(at: position)
     
 }
 
@@ -266,16 +294,16 @@ while deck.count > 26 {
 status(of: playerHand, for: "player", type: "regular")
 
 // "Shuffle" the deck and give half the cards to the computer
-while deck.count > 0 {
+while deck.cards.count > 0 {
     
     // Generate a random number between 0 and the count of cards still left in the deck
-    var position = Int(arc4random_uniform(UInt32(deck.count)))
+    var position = Int(arc4random_uniform(UInt32(deck.cards.count)))
     
     // Copy the card in this position to the computer's hand
-    computerHand.append(deck[position])
+    computerHand.append(deck.cards[position])
     
     // Remove the card from the deck for this position
-    deck.remove(at: position)
+    deck.cards.remove(at: position)
     
 }
 
@@ -355,3 +383,4 @@ if playerHand.count == 0 {
 
 // Print game rseults
 game.report()
+
