@@ -6,7 +6,7 @@ func status(of hand : [Card], for player : String, type : String) {
     print("=====================================")
     print("All cards in the \(player)'s \(type) hand are...")
     for (value, card) in hand.enumerated() {
-        print("Card \(value + 1) in \(player)'s \(type) hand is a suit of \(Suit.glyph(forHashValue: card.suit)) and value is \(card.value)")
+        print("Card \(value + 1) in \(player)'s \(type) hand is a suit of \(Suit.glyphFor(card.suit)) and value is \(card.value)")
     }
 }
 
@@ -106,8 +106,8 @@ enum Suit : String {
     case clubs      = "♣️"
     
     // Given a value, returns the suit
-    static func glyph(forHashValue : Int) -> String {
-        switch forHashValue {
+    static func glyphFor(_ hashValue : Int) -> String {
+        switch hashValue {
         case 0 :
             return Suit.hearts.rawValue
         case 1 :
@@ -172,7 +172,7 @@ for suit in 0...3 {
 
 // Iterate over the deck of cards
 for card in deck {
-    print("Suit is \(Suit.glyph(forHashValue: card.suit)) and value is \(card.value)")
+    print("Suit is \(Suit.glyphFor(card.suit)) and value is \(card.value)")
 }
 
 // Initialize hands
