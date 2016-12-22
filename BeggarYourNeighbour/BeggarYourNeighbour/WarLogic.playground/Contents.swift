@@ -219,7 +219,7 @@ struct Deck {
     // Initializer(s)
     init(acesHigh : Bool = false, withJokers : Bool = false) {
         
-        // Initalize a deck of cards
+        // Initalize the deck of cards
         cards = []
         for suit in 1...4 {
             for value in 1...13 {
@@ -237,6 +237,52 @@ struct Deck {
         for card in self.cards {
             print("Suit is \(card.suit.glyph)) and value is \(card.value)")
         }
+    }
+    
+    // Deals the specified number of cards to a hand
+    mutating func deal(_ cardsToDeal : Int) -> [Card]? {
+        
+        // Track cards left to deal
+        var cardsLeftToDeal = cardsToDeal
+        
+        // Make an array that will be passed back out of the function
+        var cardsDealt : [Card] = []
+        
+        // "Shuffle" the deck and give half the cards to the player
+        while cardsLeftToDeal > 0 && self.cards.count > 0 {
+            
+            // Generate a random number between 0 and the count of cards still left in the deck
+            let position = Int(arc4random_uniform(UInt32(self.cards.count)))
+            
+            // Copy the card in this position to the player's hand
+            cardsDealt.append(self.cards[position])
+            
+            // Remove the card from the deck for this position
+            self.cards.remove(at: position)
+            
+            // We've dealt a card
+            cardsLeftToDeal -= 1
+            
+        }
+        
+        // Check that we could deal the requested number of cards, otherwise return nil
+        if cardsDealt.count < cardsToDeal {
+            
+            // Return dealt cards to deck
+            self.cards.append(contentsOf: cardsDealt)
+            
+            // Clear cards dealt
+            cardsDealt = []
+            
+            // Return nothing, since we couldn't deal the requested number of cards
+            return nil
+            
+        } else {
+            
+            // We successfully dealt the right number of cards
+            return cardsDealt
+        }
+        
     }
     
 }
@@ -276,35 +322,24 @@ var game = War()
 var playerHand : [Card] = []
 var computerHand : [Card] = []
 
-// "Shuffle" the deck and give half the cards to the player
-while deck.cards.count > 26 {
-    
-    // Generate a random number between 0 and the count of cards still left in the deck
-    var position = Int(arc4random_uniform(UInt32(deck.cards.count)))
-    
-    // Copy the card in this position to the player's hand
-    playerHand.append(deck.cards[position])
-    
-    // Remove the card from the deck for this position
-    deck.cards.remove(at: position)
-    
+// Deal 26 cards to the player
+if let newCards = deck.deal(26) {
+    playerHand.append(contentsOf: newCards)
+} else {
+    print("ERROR: Deck ran out of cards.")
+    exit(-1)
 }
 
 // Show player's regular hand
 status(of: playerHand, for: "player", type: "regular")
 
-// "Shuffle" the deck and give half the cards to the computer
-while deck.cards.count > 0 {
+// Deal 26 cards to the computer
+if let newCards = deck.deal(26) {
+    computerHand.append(contentsOf: newCards)
     
-    // Generate a random number between 0 and the count of cards still left in the deck
-    var position = Int(arc4random_uniform(UInt32(deck.cards.count)))
-    
-    // Copy the card in this position to the computer's hand
-    computerHand.append(deck.cards[position])
-    
-    // Remove the card from the deck for this position
-    deck.cards.remove(at: position)
-    
+} else {
+    print("ERROR: Deck ran out of cards.")
+    exit(-1)
 }
 
 // Show computer's regular hand
