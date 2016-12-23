@@ -1,133 +1,4 @@
-//: Playground - noun: a place where people can play
-
-//
-//  main.swift
-//  BeggarYourNeighbour
-//
-//  Created by Russell Gordon on 12/14/16.
-//  Copyright © 2016 Russell Gordon. All rights reserved.
-//
-
 import Foundation
-
-// Print cards in a hand
-func status(of hand : [Card], for player : String, type : String) {
-    print("=====================================")
-    print("All cards in the \(player)'s \(type) hand are...")
-    for (index, card) in hand.enumerated() {
-        print("Card \(index + 1) in \(player)'s \(type) hand is a suit of \(card.suit.glyph) and value is \(card.value)")
-    }
-}
-
-// This function handles a war
-func playWar(playerHand : inout [Card], computerHand : inout [Card], playerWarHand : inout [Card], computerWarHand : inout [Card]) {
-    
-    // Top of deck
-    let topOfDeck = 0
-    
-    // It's a war!
-    
-    // First, check to see that another war is even playable
-    // The card currently in the deck was the cause of the tie, so if that's all the player has left: game over!
-    if playerHand.count == 1 {
-        
-        // Player loses
-        computerHand.append(playerHand[topOfDeck])
-        playerHand.remove(at: topOfDeck)
-        print("Computer wins (player out of cards in a war)")
-        return
-        
-    } else if computerHand.count == 1 {
-        
-        // Computer loses
-        playerHand.append(computerHand[topOfDeck])
-        computerHand.remove(at: topOfDeck)
-        print("Player wins (computer out of cards in a war)")
-        return
-        
-    } else {
-        
-        // Play the war
-        // Remove the card the was already compared (and caused a war)
-        // Add to the "war deck" for each player
-        playerWarHand.append(playerHand[topOfDeck])
-        computerWarHand.append(computerHand[topOfDeck])
-        playerHand.remove(at: topOfDeck)
-        computerHand.remove(at: topOfDeck)
-        
-        // Building player's war hand
-        while playerWarHand.count < 4 && playerHand.count > 1 {
-            playerWarHand.append(playerHand[topOfDeck])
-            playerHand.remove(at: topOfDeck)
-        }
-        
-        // Building computer's war hand
-        while computerWarHand.count < 4 && computerHand.count > 1 {
-            computerWarHand.append(computerHand[topOfDeck])
-            computerHand.remove(at: topOfDeck)
-        }
-        
-        // Show player's war hand
-        status(of: playerWarHand, for: "player", type: "war")
-        
-        // Show computer's war hand
-        status(of: computerWarHand, for: "computer", type: "war")
-        
-        // Show player's regular hand
-        status(of: playerHand, for: "player", type: "regular")
-        
-        // Show computer's regular hand
-        status(of: computerHand, for: "computer", type: "regular")
-        
-        // Who won this war?
-        if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
-            
-            // Player won
-            
-            // Give cards from both war hands to player
-            playerHand.append(contentsOf: playerWarHand)
-            playerHand.append(contentsOf: computerWarHand)
-            
-            // Emtpy the war hands
-            playerWarHand = []
-            computerWarHand = []
-            
-            // Give player the cards from regular deck that were compared
-            playerHand.append(computerHand[topOfDeck])
-            playerHand.append(playerHand[topOfDeck])
-            computerHand.remove(at: topOfDeck)
-            playerHand.remove(at: topOfDeck)
-            
-        } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
-            
-            // Computer won
-            
-            // Give cards from both war hands to computer
-            computerHand.append(contentsOf: playerWarHand)
-            computerHand.append(contentsOf: computerWarHand)
-            
-            // Empty the war hands
-            playerWarHand = []
-            computerWarHand = []
-            
-            // Give computer the cards from regular deck that were compared
-            computerHand.append(computerHand[topOfDeck])
-            computerHand.append(playerHand[topOfDeck])
-            computerHand.remove(at: topOfDeck)
-            playerHand.remove(at: topOfDeck)
-            
-            
-        } else {
-            
-            //It is another war
-            print("It is time for _another_ war!")
-            playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
-            
-        }
-        
-    }
-    
-}
 
 // Create an enumeration for the suits of a deck of cards
 enum Suit : Int {
@@ -235,7 +106,7 @@ struct Deck {
     func status() {
         // Iterate over the deck of cards
         for card in self.cards {
-            print("Suit is \(card.suit.glyph)) and value is \(card.value)")
+            print("Suit is \(card.suit.glyph) and value is \(card.value)")
         }
     }
     
@@ -287,12 +158,6 @@ struct Deck {
     
 }
 
-// Make a deck of cards
-var deck = Deck()
-
-// What does the deck look like?
-deck.status()
-
 // Create a new datatype to represent a game of war
 struct War {
     var hands : Int
@@ -314,77 +179,217 @@ struct War {
     }
 }
 
+// Structure to define hand
+struct Hand {
+    
+    // Properties
+    var hand : [Card]
+    var description : String
+    var type : String
+    var topCard : Card {
+        return hand[0]
+    }
+    
+    // Initializer(s)
+    init(description : String, type : String) {
+        self.hand = []
+        self.description = description
+        self.type = type
+    }
+    
+    // Print status of this hand
+    func status() {
+        print("=====================================")
+        print("All cards in the \(description)'s \(type) hand are...")
+        for (index, card) in hand.enumerated() {
+            print("Card \(index + 1) in \(description)'s \(type) hand is a suit of \(card.suit.glyph) and value is \(card.value)")
+        }
+    }
+    
+    // Remove the top card of this hand
+    mutating func removeTopCard() {
+        self.hand.remove(at: 0)
+    }
+}
+
+// This function handles a war
+func playWar(player : inout Hand, computer : inout Hand, playerWar : inout Hand, computerWar : inout Hand) {
+    
+    // It's a war!
+    
+    // First, check to see that another war is even playable
+    // The card currently in the deck was the cause of the tie, so if that's all the player has left: game over!
+    if player.hand.count == 1 {
+        
+        // Player loses
+        computer.hand.append(player.topCard)
+        player.removeTopCard()
+        print("Computer wins (player out of cards in a war)")
+        return
+        
+    } else if computer.hand.count == 1 {
+        
+        // Computer loses
+        player.hand.append(computer.topCard)
+        computer.removeTopCard()
+        print("Player wins (computer out of cards in a war)")
+        return
+        
+    } else {
+        
+        // Play the war
+        // Remove the card the was already compared (and caused a war)
+        // Add to the "war deck" for each player
+        playerWar.hand.append(player.topCard)
+        computerWar.hand.append(computer.topCard)
+        player.removeTopCard()
+        computer.removeTopCard()
+        
+        // Building player's war hand
+        while playerWar.hand.count < 4 && player.hand.count > 1 {
+            playerWar.hand.append(player.topCard)
+            player.removeTopCard()
+        }
+        
+        // Building computer's war hand
+        while computerWar.hand.count < 4 && computer.hand.count > 1 {
+            computerWar.hand.append(computer.topCard)
+            computer.removeTopCard()
+        }
+        
+        // Show player's war hand
+        playerWar.status()
+        
+        // Show computer's war hand
+        computerWar.status()
+        
+        // Show player's regular hand
+        player.status()
+        
+        // Show computer's regular hand
+        computer.status()
+        
+        // Who won this war?
+        if player.topCard.beats(computer.topCard) {
+            
+            // Player won
+            
+            // Give cards from both war hands to player
+            player.hand.append(contentsOf: playerWar.hand)
+            player.hand.append(contentsOf: computerWar.hand)
+            
+            // Emtpy the war hands
+            playerWar.hand = []
+            computerWar.hand = []
+            
+            // Give player the cards from regular deck that were compared
+            player.hand.append(computer.topCard)
+            player.hand.append(player.topCard)
+            computer.removeTopCard()
+            player.removeTopCard()
+            
+        } else if computer.topCard.beats(player.topCard) {
+            
+            // Computer won
+            
+            // Give cards from both war hands to computer
+            computer.hand.append(contentsOf: playerWar.hand)
+            computer.hand.append(contentsOf: computerWar.hand)
+            
+            // Empty the war hands
+            playerWar.hand = []
+            computerWar.hand = []
+            
+            // Give computer the cards from regular deck that were compared
+            computer.hand.append(computer.topCard)
+            computer.hand.append(player.topCard)
+            computer.removeTopCard()
+            player.removeTopCard()
+            
+            
+        } else {
+            
+            //It is another war
+            print("It is time for _another_ war!")
+            playWar(player: &player, computer: &computer, playerWar: &playerWar, computerWar: &computerWar)
+            
+        }
+        
+    }
+    
+}
+
+// Make a deck of cards
+var deck = Deck()
+
+// What does the deck look like?
+deck.status()
+
 // Track the result of this game
 var game = War()
 
 // Initialize hands
-//create empty array for player hand and computer hand
-var playerHand : [Card] = []
-var computerHand : [Card] = []
+var player = Hand(description: "player", type: "regular")
+var computer = Hand(description: "computer", type: "regular")
 
 // Deal 26 cards to the player
-if let newCards = deck.deal(26) {
-    playerHand.append(contentsOf: newCards)
+if let cards = deck.deal(26) {
+    player.hand = cards
 } else {
     print("ERROR: Deck ran out of cards.")
     exit(-1)
 }
-
-// Show player's regular hand
-status(of: playerHand, for: "player", type: "regular")
 
 // Deal 26 cards to the computer
-if let newCards = deck.deal(26) {
-    computerHand.append(contentsOf: newCards)
-    
+if let cards = deck.deal(26) {
+    computer.hand = cards
 } else {
     print("ERROR: Deck ran out of cards.")
     exit(-1)
 }
 
-// Show computer's regular hand
-status(of: computerHand, for: "computer", type: "regular")
-
-// Declare a constant for the top of the "deck" (0th element in array)
-let topOfDeck = 0
+// Game is about to start
+print("==========")
+print("Game start")
+print("==========")
 
 // This loop will repeat until the player either loses or wins by having all or no cards
-while playerHand.count > 0 && playerHand.count < 52 {
+while player.hand.count > 0 && player.hand.count < 52 {
     
     // Track result
     game.hands += 1
     
     // Show player's regular hand
-    status(of: playerHand, for: "player", type: "regular")
+    player.status()
     
     // Show computer's regular hand
-    status(of: computerHand, for: "computer", type: "regular")
+    computer.status()
     
     // Compare the two cards and print a message saying "Computer won" or "Player won" as appropriate
-    if playerHand[topOfDeck].beats(computerHand[topOfDeck]) {
+    if player.topCard.beats(computer.topCard) {
         
         // Player wins
         // Put computer's card at bottom of player's deck
-        playerHand.append(computerHand[topOfDeck])
+        player.hand.append(computer.topCard)
         // Put player's card at bottom of player's deck
-        playerHand.append(playerHand[topOfDeck])
+        player.hand.append(player.topCard)
         // Remove the cards we compared from top of each deck
-        playerHand.remove(at: topOfDeck)
-        computerHand.remove(at: topOfDeck)
+        player.removeTopCard()
+        computer.removeTopCard()
         
         // Track result
         game.playerWins += 1
         
-    } else if computerHand[topOfDeck].beats(playerHand[topOfDeck]) {
+    } else if computer.topCard.beats(player.topCard) {
         
         // Computer wins
         // Put player's card at bottom of computer's deck
-        computerHand.append(playerHand[topOfDeck])
+        computer.hand.append(player.topCard)
         // Put computer's card at bottom of computer's deck
-        computerHand.append(computerHand[topOfDeck])
+        computer.hand.append(computer.topCard)
         // Remove the cards we compared from top of each deck
-        playerHand.remove(at: topOfDeck)
-        computerHand.remove(at: topOfDeck)
+        player.removeTopCard()
+        computer.removeTopCard()
         
     } else {
         
@@ -393,24 +398,24 @@ while playerHand.count > 0 && playerHand.count < 52 {
         // It's a war!
         
         // Initialize the decks for war
-        var playerWarHand : [Card] = []
-        var computerWarHand : [Card] = []
+        var playerWar = Hand(description: "player", type: "war")
+        var computerWar = Hand(description: "computer", type: "war")
         
         // Play the war!
-        playWar(playerHand: &playerHand, computerHand: &computerHand, playerWarHand: &playerWarHand, computerWarHand: &computerWarHand)
+        playWar(player: &player, computer: &computer, playerWar: &playerWar, computerWar: &computerWar)
         
     }
     
 }
 
 // Show player's regular hand
-status(of: playerHand, for: "player", type: "regular")
+player.status()
 
 // Show computer's regular hand
-status(of: computerHand, for: "computer", type: "regular")
+computer.status()
 
 // Determine who won in the end
-if playerHand.count == 0 {
+if player.hand.count == 0 {
     print("Computer wins (end of game)")
 } else {
     print("Player wins (end of game)")
